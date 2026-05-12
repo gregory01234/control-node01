@@ -6,7 +6,7 @@
   tasks:
 
     # =========================
-    # SYSTEM
+    # SYSTEM BASE
     # =========================
 
     - name: Update system
@@ -31,6 +31,7 @@
         enabled: yes
         state: started
 
+
     # =========================
     # DOCKER
     # =========================
@@ -46,6 +47,7 @@
         enabled: yes
         state: started
 
+
     # =========================
     # K3S
     # =========================
@@ -55,12 +57,14 @@
       args:
         creates: /usr/local/bin/k3s
 
+
     # =========================
-    # PYTHON LIBRARIES
+    # PYTHON LIBRARIES (FIXED FOR UBUNTU 24.04 / PEP 668)
     # =========================
 
-    - name: Install Python libraries
-      pip:
+    - name: Install Python libraries (system-safe)
+      apt:
         name:
-          - kubernetes
-          - requests
+          - python3-kubernetes
+          - python3-requests
+        state: present
