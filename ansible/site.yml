@@ -2,7 +2,7 @@
 - name: CONTROL NODE 01 - CLEAN SETUP
   hosts: localhost
   become: yes
-  connection: local
+  gather_facts: yes
 
   tasks:
 
@@ -23,6 +23,7 @@
           - vim
           - htop
           - openssh-server
+          - python3-pip
           - ca-certificates
         state: present
 
@@ -50,27 +51,37 @@
 
 
     # =========================
-    # K3S (SINGLE NODE CLUSTER)
+    # K3S
     # =========================
 
     - name: Install K3s
-      shell: curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
+      shell: curl -sfL https://get.k3s.io | sh -
       args:
         creates: /usr/local/bin/k3s
 
+    - name: Wait for K3s API to be ready
+      shell: kubectl get nodes
+      register: k3s_ready
+      retries: 20
+      delay: 5
+      until: k3s_ready.rc == 0
+
 
     # =========================
-    # KUBECTL CONFIG FIX
+    # KUBECONFIG FIX
     # =========================
 
-    - name: Setup kubeconfig
+    - name: Ensure kubeconfig is available
       shell: |
-        mkdir -p ~/.kube
-        cp /etc/rancher/k3s/k3s.yaml ~/.kube/config || true
+        mkdir -p /home/dev01/.kube
+        cp /etc/rancher/k3s/k3s.yaml /home/dev01/.kube/config
+        chown -R dev01:dev01 /home/dev01/.kube
+      args:
+        creates: /home/dev01/.kube/config
 
 
     # =========================
-    # PYTHON DEPENDENCIES (FIXED FOR UBUNTU 24.04)
+    # PYTHON (PEP 668 SAFE)
     # =========================
 
     - name: Install Python system packages (NO PIP)
@@ -82,8 +93,15 @@
 
 
     # =========================
-    # OLLAMA DEPLOYMENT INTO K3S
+    # KUBERNETES DEPLOY
     # =========================
+
+    - name: Wait for Kubernetes API (hard guarantee)
+      shell: kubectl get nodes
+      register: k8s_check
+      retries: 30
+      delay: 5
+      until: k8s_check.rc == 0
 
     - name: Deploy Ollama in Kubernetes
       shell: |
