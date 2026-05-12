@@ -26,7 +26,7 @@ cd control-node01
 
 echo "[5/6] Running Ansible playbook..."
 
-ansible-playbook ansible/site.yml
+ansible-playbook ansible/site.yml -K
 
 echo "[6/6] DONE"
 echo "CONTROL NODE READY"
