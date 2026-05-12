@@ -1,0 +1,66 @@
+---
+- name: CONTROL NODE 01
+  hosts: localhost
+  become: yes
+
+  tasks:
+
+    # =========================
+    # SYSTEM
+    # =========================
+
+    - name: Update system
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install base packages
+      apt:
+        name:
+          - curl
+          - git
+          - vim
+          - htop
+          - openssh-server
+          - python3-pip
+        state: present
+
+    - name: Enable SSH
+      systemd:
+        name: ssh
+        enabled: yes
+        state: started
+
+    # =========================
+    # DOCKER
+    # =========================
+
+    - name: Install Docker
+      shell: curl -fsSL https://get.docker.com | sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    # =========================
+    # K3S
+    # =========================
+
+    - name: Install K3s
+      shell: curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    # =========================
+    # PYTHON LIBRARIES
+    # =========================
+
+    - name: Install Python libraries
+      pip:
+        name:
+          - kubernetes
+          - requests
