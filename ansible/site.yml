@@ -2,6 +2,7 @@
 - name: CONTROL NODE 01
   hosts: localhost
   become: yes
+  connection: local
 
   tasks:
 
@@ -22,7 +23,7 @@
           - vim
           - htop
           - openssh-server
-          - python3-pip
+          - ca-certificates
         state: present
 
     - name: Enable SSH
@@ -41,7 +42,7 @@
       args:
         creates: /usr/bin/docker
 
-    - name: Start Docker
+    - name: Enable Docker
       systemd:
         name: docker
         enabled: yes
@@ -49,22 +50,60 @@
 
 
     # =========================
-    # K3S
+    # K3S (SINGLE NODE CLUSTER)
     # =========================
 
     - name: Install K3s
-      shell: curl -sfL https://get.k3s.io | sh -
+      shell: curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
       args:
         creates: /usr/local/bin/k3s
 
 
     # =========================
-    # PYTHON LIBRARIES (APT SAFE - NO PIP)
+    # KUBECTL CONFIG LINK
     # =========================
 
-    - name: Install Python libraries (system-safe)
-      apt:
-        name:
-          - python3-kubernetes
-          - python3-requests
-        state: present
+    - name: Link kubeconfig
+      shell: |
+        mkdir -p ~/.kube
+        cp /etc/rancher/k3s/k3s.yaml ~/.kube/config || true
+
+
+    # =========================
+    # DEPLOY OLLAMA INTO K3S
+    # =========================
+
+    - name: Deploy Ollama to Kubernetes
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ollama
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ollama
+          template:
+            metadata:
+              labels:
+                app: ollama
+            spec:
+              containers:
+              - name: ollama
+                image: ollama/ollama
+                ports:
+                - containerPort: 11434
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ollama
+        spec:
+          selector:
+            app: ollama
+          ports:
+          - port: 11434
+            targetPort: 11434
+        EOF
