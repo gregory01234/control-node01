@@ -1,32 +1,17 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -e
 
-REPO="https://github.com/gregory01234/control-node01.git"
+echo "[1] System update"
+sudo apt update -y
+sudo apt install -y ansible git curl
 
-echo "[1/6] Updating system..."
-sudo apt update
-sudo apt upgrade -y
-
-echo "[2/6] Installing packages..."
-sudo apt install -y \
-    git \
-    curl \
-    ansible
-
-echo "[3/6] Cloning repository..."
-
-if [ ! -d "control-node01" ]; then
-    git clone $REPO
+echo "[2] Cloning repo"
+if [ ! -d control-node01 ]; then
+  git clone https://github.com/gregory01234/control-node01.git
 fi
-
-echo "[4/6] Entering project..."
 
 cd control-node01
 
-echo "[5/6] Running Ansible playbook..."
-
-ansible-playbook ansible/site.yml -K
-
-echo "[6/6] DONE"
-echo "CONTROL NODE READY"
+echo "[3] Running Ansible"
+ansible-playbook -i "localhost," -c local ansible/site.yml
