@@ -1,5 +1,5 @@
 ---
-- name: CONTROL NODE 01
+- name: CONTROL NODE 01 - CLEAN SETUP
   hosts: localhost
   become: yes
   connection: local
@@ -60,20 +60,32 @@
 
 
     # =========================
-    # KUBECTL CONFIG LINK
+    # KUBECTL CONFIG FIX
     # =========================
 
-    - name: Link kubeconfig
+    - name: Setup kubeconfig
       shell: |
         mkdir -p ~/.kube
         cp /etc/rancher/k3s/k3s.yaml ~/.kube/config || true
 
 
     # =========================
-    # DEPLOY OLLAMA INTO K3S
+    # PYTHON DEPENDENCIES (FIXED FOR UBUNTU 24.04)
     # =========================
 
-    - name: Deploy Ollama to Kubernetes
+    - name: Install Python system packages (NO PIP)
+      apt:
+        name:
+          - python3-kubernetes
+          - python3-requests
+        state: present
+
+
+    # =========================
+    # OLLAMA DEPLOYMENT INTO K3S
+    # =========================
+
+    - name: Deploy Ollama in Kubernetes
       shell: |
         kubectl apply -f - <<EOF
         apiVersion: apps/v1
