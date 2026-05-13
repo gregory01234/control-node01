@@ -9,34 +9,35 @@ echo "🚀 INIT SYSTEM START"
 echo "=============================="
 
 # =========================
-# UPDATE / UPGRADE
+# UPDATE / UPGRADE (ROOT VIA SUDO)
 # =========================
 echo ""
 echo "📦 system update/upgrade..."
-apt update -y
-apt upgrade -y
+
+sudo apt update -y
+sudo apt upgrade -y
 
 # =========================
 # USER CHECK
 # =========================
 echo ""
-echo "👤 checking user $USER..."
+echo "👤 checking user: $USER"
 
 if id "$USER" &>/dev/null; then
   echo "✔ user exists"
 else
-  echo "❌ user does not exist -> creating $USER"
-  adduser --disabled-password --gecos "" "$USER"
+  echo "➕ creating user $USER"
+  sudo adduser --disabled-password --gecos "" "$USER"
 fi
 
 # =========================
-# SUDO ACCESS
+# SUDO ACCESS CONFIG
 # =========================
 echo ""
 echo "🔐 granting sudo NOPASSWD..."
 
-echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER
-chmod 440 /etc/sudoers.d/$USER
+echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER > /dev/null
+sudo chmod 440 /etc/sudoers.d/$USER
 
 echo "✔ sudo configured"
 
@@ -44,14 +45,15 @@ echo "✔ sudo configured"
 # DOWNLOAD + RUN INSTALL
 # =========================
 echo ""
-echo "🚀 downloading install.sh..."
+echo "🚀 downloading install.sh from repo..."
 
 curl -fsSL https://raw.githubusercontent.com/gregory01234/control-node01/main/install.sh -o install.sh
+
 chmod +x install.sh
 
 echo ""
 echo "=============================="
-echo "▶ STARTING INSTALL SCRIPT"
+echo "▶ RUNNING INSTALL"
 echo "=============================="
 
-bash -x install.sh
+sudo bash -x install.sh
