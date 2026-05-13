@@ -14,6 +14,8 @@ chmod +x install.sh
 
 Uruchomienie systemu:
 ./install.sh
+jedna komenda:
+curl -fsSL https://raw.githubusercontent.com/gregory01234/control-node01/main/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 
 Flow systemu:
 install.sh → update system → install Ansible + Git → clone repo → run Ansible playbook → bootstrap K3s + Docker
