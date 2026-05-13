@@ -23,6 +23,10 @@ echo "dev01 ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/dev01
 sudo chmod 440 /etc/sudoers.d/dev01
 sudo -n true
 
+test:
+sudo -n whoami 
+odpowiedź: root
+
 Wyjaśnienie:
 
 1. Pierwsza komenda tworzy plik konfiguracyjny i przypisuje użytkownikowi dev01 pełne uprawnienia sudo bez konieczności podawania hasła.
